@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-900: #0a0a0f;
+  --color-dark-800: #12121a;
+  --color-dark-700: #1a1a25;
+  --color-dark-600: #22222f;
+  --color-dark-500: #2a2a3a;
+  --color-signal-buy: #10b981;
+  --color-signal-hold: #f59e0b;
+  --color-signal-sell: #ef4444;
+  --color-accent-blue: #3b82f6;
+  --color-accent-purple: #8b5cf6;
+}
+
+body {
+  margin: 0;
+  background: var(--color-dark-900);
+  color: #e5e7eb;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-dark-800);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-dark-500);
+  border-radius: 3px;
+}
