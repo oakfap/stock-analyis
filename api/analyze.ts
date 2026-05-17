@@ -112,7 +112,7 @@ Provide current market analysis and buy/hold/sell recommendations for each stock
 Today's date context: provide your best analysis based on your latest knowledge.`
 
     const message = await client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
