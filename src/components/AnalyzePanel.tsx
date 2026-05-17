@@ -31,6 +31,7 @@ export default function AnalyzePanel() {
     new Set(['GOOGL', 'NVDA', 'ASML', 'LLY', 'AVGO', 'MU', 'PLTR', 'VRT', 'AMD', 'NBIS', 'RKLB', 'PLUG', 'GEV'])
   )
   const [customInput, setCustomInput] = useState('')
+  const [model, setModel] = useState('claude-sonnet-4-6')
   const [showRaw, setShowRaw] = useState(false)
   const [rawResponse, setRawResponse] = useState('')
 
@@ -54,7 +55,7 @@ export default function AnalyzePanel() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tickers: all }),
+        body: JSON.stringify({ tickers: all, model }),
       })
       const data = await res.json()
       setRawResponse(JSON.stringify(data, null, 2))
@@ -98,6 +99,15 @@ export default function AnalyzePanel() {
       </div>
 
       <div className="flex gap-2 mb-3">
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="bg-dark-600/50 border border-dark-500 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-accent-blue appearance-none cursor-pointer"
+        >
+          <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+          <option value="claude-opus-4-6">Opus 4.6</option>
+          <option value="claude-opus-4-7">Opus 4.7</option>
+        </select>
         <input
           type="text"
           placeholder="Custom tickers (SOFI, COIN...)"

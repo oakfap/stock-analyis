@@ -18,10 +18,13 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { tickers } = req.body
+    const { tickers, model } = req.body
     if (!tickers || !Array.isArray(tickers) || tickers.length === 0) {
       return res.status(400).json({ error: 'tickers array is required' })
     }
+
+    const allowedModels = ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-opus-4-7']
+    const selectedModel = allowedModels.includes(model) ? model : 'claude-sonnet-4-6'
 
     const client = new Anthropic({ apiKey })
 
@@ -33,7 +36,7 @@ export default async function handler(req: any, res: any) {
     const fmt = (d: Date) => d.toISOString().slice(0, 10)
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: selectedModel,
       max_tokens: 4096,
       system: `Stock analyst doing WEEKLY analysis. Reply ONLY raw JSON, no markdown/fences. Schema:
 {"weekOf":"${fmt(weekStart)} to ${fmt(weekEnd)}","market":{"summary":"1-2 sentences","fedRate":"X%","inflation":"X%","oil":"$X"},"stocks":[{"ticker":"SYM","company":"Name","signal":"BUY|HOLD|SELL","confidence":"Low|Medium|High","keyReasons":["r1","r2"],"riskFactors":["r1","r2"],"newsSummary":"1 sentence","sector":"Sector"}],"previousWeek":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}],"currentWeek":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}],"nextWeek":[{"title":"upcoming event/earnings/data","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence on what to watch"}]}
