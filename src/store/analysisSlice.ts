@@ -1,13 +1,14 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
 import type { StockAnalysis, NewsItem, MarketOverview, FilterSignal } from '../types'
-import { stockAnalyses, newsItems, marketOverview } from '../data/analysisData'
+import { stockAnalyses, previousWeekNews, currentWeekNews, nextWeekNews, marketOverview } from '../data/analysisData'
 
 interface AnalysisState {
   stocks: StockAnalysis[]
-  news: NewsItem[]
+  previousWeek: NewsItem[]
+  currentWeek: NewsItem[]
+  nextWeek: NewsItem[]
   market: MarketOverview
   filterSignal: FilterSignal
-  selectedTicker: string | null
   searchQuery: string
   loading: boolean
   error: string | null
@@ -19,10 +20,11 @@ const DEFAULT_TICKERS = ['GOOGL', 'NVDA', 'ASML', 'LLY', 'AVGO', 'MU', 'PLTR', '
 
 const initialState: AnalysisState = {
   stocks: stockAnalyses,
-  news: newsItems,
+  previousWeek: previousWeekNews,
+  currentWeek: currentWeekNews,
+  nextWeek: nextWeekNews,
   market: marketOverview,
   filterSignal: 'ALL',
-  selectedTicker: null,
   searchQuery: '',
   loading: false,
   error: null,
@@ -53,9 +55,6 @@ const analysisSlice = createSlice({
     setFilterSignal(state, action: PayloadAction<FilterSignal>) {
       state.filterSignal = action.payload
     },
-    setSelectedTicker(state, action: PayloadAction<string | null>) {
-      state.selectedTicker = action.payload
-    },
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload
     },
@@ -74,14 +73,13 @@ const analysisSlice = createSlice({
       })
       .addCase(fetchAnalysis.fulfilled, (state, action) => {
         state.loading = false
-        state.stocks = action.payload.stocks ?? state.stocks
-        state.news = action.payload.news ?? state.news
-        if (action.payload.market) {
-          state.market = {
-            ...state.market,
-            ...action.payload.market,
-          }
-        }
+        const p = action.payload
+        state.stocks = p.stocks ?? state.stocks
+        state.previousWeek = p.previousWeek ?? state.previousWeek
+        state.currentWeek = p.currentWeek ?? state.currentWeek
+        state.nextWeek = p.nextWeek ?? state.nextWeek
+        if (p.market) state.market = { ...state.market, ...p.market }
+        if (p.weekOf) state.market.weekOf = p.weekOf
         state.lastUpdated = new Date().toISOString()
       })
       .addCase(fetchAnalysis.rejected, (state, action) => {
@@ -91,6 +89,5 @@ const analysisSlice = createSlice({
   },
 })
 
-export const { setFilterSignal, setSelectedTicker, setSearchQuery, setTickers, clearError } =
-  analysisSlice.actions
+export const { setFilterSignal, setSearchQuery, setTickers, clearError } = analysisSlice.actions
 export default analysisSlice.reducer

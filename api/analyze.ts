@@ -25,15 +25,22 @@ export default async function handler(req: any, res: any) {
 
     const client = new Anthropic({ apiKey })
 
+    const now = new Date()
+    const weekStart = new Date(now)
+    weekStart.setDate(now.getDate() - now.getDay() + 1)
+    const weekEnd = new Date(weekStart)
+    weekEnd.setDate(weekStart.getDate() + 4)
+    const fmt = (d: Date) => d.toISOString().slice(0, 10)
+
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
-      system: `Stock analyst. Reply ONLY raw JSON, no markdown/code fences. Schema:
-{"date":"YYYY-MM-DD","market":{"summary":"1-2 sentences","fedRate":"X%","inflation":"X%","oil":"$X"},"stocks":[{"ticker":"SYM","company":"Name","signal":"BUY|HOLD|SELL","confidence":"Low|Medium|High","keyReasons":["r1","r2"],"riskFactors":["r1","r2"],"newsSummary":"1 sentence","sector":"Sector"}],"news":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}]}
-Keep reasons/summaries under 15 words each. Max 5 news items. 2-3 keyReasons, 2 riskFactors per stock. Be concise.`,
+      system: `Stock analyst doing WEEKLY analysis. Reply ONLY raw JSON, no markdown/fences. Schema:
+{"weekOf":"${fmt(weekStart)} to ${fmt(weekEnd)}","market":{"summary":"1-2 sentences","fedRate":"X%","inflation":"X%","oil":"$X"},"stocks":[{"ticker":"SYM","company":"Name","signal":"BUY|HOLD|SELL","confidence":"Low|Medium|High","keyReasons":["r1","r2"],"riskFactors":["r1","r2"],"newsSummary":"1 sentence","sector":"Sector"}],"previousWeek":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}],"currentWeek":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}],"nextWeek":[{"title":"upcoming event/earnings/data","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence on what to watch"}]}
+Rules: under 15 words per reason/summary. 2-3 keyReasons, 2 riskFactors per stock. 3-5 items per news section. previousWeek=last week highlights. currentWeek=this week news. nextWeek=upcoming events/earnings/catalysts to watch.`,
       messages: [{
         role: 'user',
-        content: `Analyze: ${tickers.join(',')}`,
+        content: `Weekly analysis for: ${tickers.join(',')}`,
       }],
     })
 

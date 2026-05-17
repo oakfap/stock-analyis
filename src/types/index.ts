@@ -20,8 +20,14 @@ export interface NewsItem {
   summary: string
 }
 
+export interface WeeklyNews {
+  previousWeek: NewsItem[]
+  currentWeek: NewsItem[]
+  nextWeek: NewsItem[]
+}
+
 export interface MarketOverview {
-  date: string
+  weekOf: string
   summary: string
   fedRate: string
   inflation: string

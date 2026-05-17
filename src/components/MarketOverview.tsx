@@ -16,6 +16,7 @@ export default function MarketOverview() {
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <span className="w-1 h-3 bg-gradient-to-b from-accent-blue to-accent-purple rounded-full" />
             Market Overview
+            <span className="text-gray-600 font-normal normal-case tracking-normal ml-1">Week of {market.weekOf}</span>
           </h2>
           <p className="text-sm text-gray-300 leading-relaxed">{market.summary}</p>
         </div>
