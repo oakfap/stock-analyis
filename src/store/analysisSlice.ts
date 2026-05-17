@@ -15,7 +15,7 @@ interface AnalysisState {
   tickers: string[]
 }
 
-const DEFAULT_TICKERS = ['NVDA', 'AMD', 'MSFT', 'GOOGL', 'META', 'PLTR', 'SMCI']
+const DEFAULT_TICKERS = ['GOOGL', 'NVDA', 'ASML', 'LLY', 'AVGO', 'MU', 'PLTR', 'VRT', 'AMD', 'NBIS', 'RKLB', 'PLUG', 'GEV']
 
 const initialState: AnalysisState = {
   stocks: stockAnalyses,
@@ -74,14 +74,13 @@ const analysisSlice = createSlice({
       })
       .addCase(fetchAnalysis.fulfilled, (state, action) => {
         state.loading = false
-        state.stocks = action.payload.stocks
-        state.news = action.payload.news
-        state.market = {
-          ...state.market,
-          ...action.payload.market,
-          sp500: action.payload.market.sp500 ?? state.market.sp500,
-          nasdaq: action.payload.market.nasdaq ?? state.market.nasdaq,
-          dow: action.payload.market.dow ?? state.market.dow,
+        state.stocks = action.payload.stocks ?? state.stocks
+        state.news = action.payload.news ?? state.news
+        if (action.payload.market) {
+          state.market = {
+            ...state.market,
+            ...action.payload.market,
+          }
         }
         state.lastUpdated = new Date().toISOString()
       })

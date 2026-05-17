@@ -28,9 +28,9 @@ export default async function handler(req: any, res: any) {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
-      system: `Stock analyst. Reply ONLY raw JSON, no markdown/fences. Schema:
+      system: `Stock analyst. Reply ONLY raw JSON, no markdown/code fences. Schema:
 {"date":"YYYY-MM-DD","market":{"summary":"1-2 sentences","fedRate":"X%","inflation":"X%","oil":"$X"},"stocks":[{"ticker":"SYM","company":"Name","signal":"BUY|HOLD|SELL","confidence":"Low|Medium|High","keyReasons":["r1","r2"],"riskFactors":["r1","r2"],"newsSummary":"1 sentence","sector":"Sector"}],"news":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}]}
-Keep reasons/summaries under 15 words each. Max 5 news items. Be concise.`,
+Keep reasons/summaries under 15 words each. Max 5 news items. 2-3 keyReasons, 2 riskFactors per stock. Be concise.`,
       messages: [{
         role: 'user',
         content: `Analyze: ${tickers.join(',')}`,

@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { useAppSelector } from '../store/hooks'
 
 export default function SignalChart() {
@@ -10,26 +10,23 @@ export default function SignalChart() {
     { name: 'SELL', value: stocks.filter((s) => s.signal === 'SELL').length, color: '#ef4444' },
   ].filter((d) => d.value > 0)
 
-  const ytdData = stocks
-    .filter((s) => s.ytdChange !== undefined)
-    .sort((a, b) => (b.ytdChange ?? 0) - (a.ytdChange ?? 0))
-    .map((s) => ({
-      ticker: s.ticker,
-      ytd: s.ytdChange,
-      fill: (s.ytdChange ?? 0) >= 0 ? '#10b981' : '#ef4444',
-    }))
+  const total = stocks.length
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="bg-dark-800 rounded-2xl border border-dark-600 p-6">
-        <h3 className="text-sm font-semibold text-white mb-4">Signal Distribution</h3>
-        <ResponsiveContainer width="100%" height={200}>
+    <div className="bg-gradient-to-br from-dark-800 to-dark-700 rounded-2xl border border-dark-600 p-6">
+      <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+        <span className="w-1.5 h-5 bg-gradient-to-b from-signal-buy to-signal-hold rounded-full" />
+        Signal Distribution
+        <span className="text-xs text-gray-500 font-normal">({total} stocks)</span>
+      </h3>
+      <div className="flex items-center gap-8 flex-wrap justify-center">
+        <ResponsiveContainer width={180} height={180}>
           <PieChart>
             <Pie
               data={signalData}
               cx="50%"
               cy="50%"
-              innerRadius={50}
+              innerRadius={55}
               outerRadius={80}
               paddingAngle={4}
               dataKey="value"
@@ -43,34 +40,16 @@ export default function SignalChart() {
             />
           </PieChart>
         </ResponsiveContainer>
-        <div className="flex justify-center gap-4 mt-2">
+        <div className="flex flex-col gap-3">
           {signalData.map((d) => (
-            <div key={d.name} className="flex items-center gap-1.5 text-xs text-gray-400">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
-              {d.name} ({d.value})
+            <div key={d.name} className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full" style={{ background: d.color }} />
+              <span className="text-sm text-gray-300 font-medium w-12">{d.name}</span>
+              <span className="text-white font-bold text-lg tabular-nums">{d.value}</span>
+              <span className="text-xs text-gray-500">({total > 0 ? Math.round((d.value / total) * 100) : 0}%)</span>
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="bg-dark-800 rounded-2xl border border-dark-600 p-6">
-        <h3 className="text-sm font-semibold text-white mb-4">YTD Performance (%)</h3>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={ytdData} layout="vertical" margin={{ left: 10, right: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" horizontal={false} />
-            <XAxis type="number" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} />
-            <YAxis type="category" dataKey="ticker" tick={{ fill: '#e5e7eb', fontSize: 12, fontWeight: 600 }} axisLine={false} width={50} />
-            <Tooltip
-              contentStyle={{ background: '#1a1a25', border: '1px solid #2a2a3a', borderRadius: '8px', color: '#e5e7eb' }}
-              formatter={(v) => [`${v}%`, 'YTD']}
-            />
-            <Bar dataKey="ytd" radius={[0, 4, 4, 0]} barSize={16}>
-              {ytdData.map((entry, i) => (
-                <Cell key={i} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
       </div>
     </div>
   )
