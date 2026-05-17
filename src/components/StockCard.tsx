@@ -1,7 +1,6 @@
+import { useState } from 'react'
 import type { StockAnalysis } from '../types'
 import { SignalBadge, ConfidenceDots } from './SignalBadge'
-import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { setSelectedTicker } from '../store/analysisSlice'
 
 const signalGlow: Record<string, string> = {
   BUY: 'hover:shadow-signal-buy/10',
@@ -10,57 +9,61 @@ const signalGlow: Record<string, string> = {
 }
 
 export default function StockCard({ stock }: { stock: StockAnalysis }) {
-  const dispatch = useAppDispatch()
-  const selectedTicker = useAppSelector((s) => s.analysis.selectedTicker)
-  const isSelected = selectedTicker === stock.ticker
+  const [open, setOpen] = useState(false)
 
   return (
-    <div
-      onClick={() => dispatch(setSelectedTicker(isSelected ? null : stock.ticker))}
-      className={`bg-gradient-to-br from-dark-800 to-dark-700 rounded-2xl border cursor-pointer transition-all duration-300 hover:shadow-xl ${signalGlow[stock.signal]} ${
-        isSelected ? 'border-accent-blue ring-1 ring-accent-blue/20 shadow-lg shadow-accent-blue/5' : 'border-dark-600 hover:border-dark-500'
-      }`}
-    >
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="text-white font-bold text-xl tracking-tight">{stock.ticker}</span>
-              {stock.ytdChange !== undefined && (
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
-                  stock.ytdChange >= 0
-                    ? 'text-signal-buy bg-signal-buy/10'
-                    : 'text-signal-sell bg-signal-sell/10'
-                }`}>
-                  {stock.ytdChange >= 0 ? '+' : ''}{stock.ytdChange}%
-                </span>
-              )}
+    <div className="relative">
+      <div
+        onClick={() => setOpen(!open)}
+        className={`bg-gradient-to-br from-dark-800 to-dark-700 rounded-2xl border cursor-pointer transition-all duration-300 hover:shadow-xl ${signalGlow[stock.signal]} ${
+          open ? 'border-accent-blue ring-1 ring-accent-blue/20 shadow-lg shadow-accent-blue/5' : 'border-dark-600 hover:border-dark-500'
+        }`}
+      >
+        <div className="p-5">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-2.5 mb-1">
+                <span className="text-white font-bold text-xl tracking-tight">{stock.ticker}</span>
+                {stock.ytdChange !== undefined && (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                    stock.ytdChange >= 0
+                      ? 'text-signal-buy bg-signal-buy/10'
+                      : 'text-signal-sell bg-signal-sell/10'
+                  }`}>
+                    {stock.ytdChange >= 0 ? '+' : ''}{stock.ytdChange}%
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-500 text-xs">{stock.company}</p>
             </div>
-            <p className="text-gray-500 text-xs">{stock.company}</p>
+            <SignalBadge signal={stock.signal} />
           </div>
-          <SignalBadge signal={stock.signal} />
-        </div>
 
-        <div className="flex items-center justify-between mb-3">
-          {stock.price && (
-            <span className="text-white font-bold text-lg tabular-nums">
-              ${stock.price.toFixed(2)}
-            </span>
-          )}
-          <ConfidenceDots confidence={stock.confidence} />
-        </div>
+          <div className="flex items-center justify-between mb-3">
+            {stock.price && (
+              <span className="text-white font-bold text-lg tabular-nums">
+                ${stock.price.toFixed(2)}
+              </span>
+            )}
+            <ConfidenceDots confidence={stock.confidence} />
+          </div>
 
-        {stock.sector && (
-          <span className="text-[10px] text-gray-500 bg-dark-600/50 px-2 py-1 rounded-md uppercase tracking-wider">
-            {stock.sector}
-          </span>
-        )}
+          <div className="flex items-center justify-between">
+            {stock.sector && (
+              <span className="text-[10px] text-gray-500 bg-dark-600/50 px-2 py-1 rounded-md uppercase tracking-wider">
+                {stock.sector}
+              </span>
+            )}
+            <svg className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
       </div>
 
-      <div className={`border-t border-dark-600 overflow-hidden transition-all duration-300 ${
-        isSelected ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
-      }`}>
-        <div className="p-5 space-y-4">
+      {open && (
+        <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-dark-800 border border-accent-blue/30 rounded-2xl shadow-2xl shadow-black/40 p-5 space-y-4 animate-in fade-in">
+          <div className="absolute -top-2 left-6 w-4 h-4 bg-dark-800 border-l border-t border-accent-blue/30 rotate-45" />
           <div>
             <h4 className="text-xs font-bold text-signal-buy uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <span className="w-1 h-3 bg-signal-buy rounded-full" />
@@ -94,7 +97,7 @@ export default function StockCard({ stock }: { stock: StockAnalysis }) {
             <p className="text-sm text-gray-300 leading-relaxed">{stock.newsSummary}</p>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setFilterSignal, setSearchQuery, setTickers, fetchAnalysis } from '../store/analysisSlice'
+import { setFilterSignal, setSearchQuery } from '../store/analysisSlice'
 import type { FilterSignal } from '../types'
 import StockCard from './StockCard'
 
@@ -13,9 +12,7 @@ const filters: { label: string; value: FilterSignal; color: string }[] = [
 
 export default function StockGrid() {
   const dispatch = useAppDispatch()
-  const { stocks, filterSignal, searchQuery, loading, tickers } = useAppSelector((s) => s.analysis)
-  const [tickerInput, setTickerInput] = useState('')
-  const [showAdd, setShowAdd] = useState(false)
+  const { stocks, filterSignal, searchQuery, loading } = useAppSelector((s) => s.analysis)
 
   const filtered = stocks.filter((s) => {
     const matchesSignal = filterSignal === 'ALL' || s.signal === filterSignal
@@ -29,20 +26,6 @@ export default function StockGrid() {
   const buyCount = stocks.filter((s) => s.signal === 'BUY').length
   const holdCount = stocks.filter((s) => s.signal === 'HOLD').length
   const sellCount = stocks.filter((s) => s.signal === 'SELL').length
-
-  const handleAddTicker = () => {
-    const newTickers = tickerInput
-      .toUpperCase()
-      .split(/[,\s]+/)
-      .filter((t) => t && !tickers.includes(t))
-    if (newTickers.length > 0) {
-      const updated = [...tickers, ...newTickers]
-      dispatch(setTickers(updated))
-      dispatch(fetchAnalysis(updated))
-      setTickerInput('')
-      setShowAdd(false)
-    }
-  }
 
   return (
     <section>
@@ -89,37 +72,8 @@ export default function StockGrid() {
               </button>
             ))}
           </div>
-
-          <button
-            onClick={() => setShowAdd(!showAdd)}
-            className="w-8 h-8 rounded-lg bg-dark-700 border border-dark-500 flex items-center justify-center text-gray-400 hover:text-white hover:border-accent-blue transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
         </div>
       </div>
-
-      {showAdd && (
-        <div className="mb-6 bg-dark-800 rounded-xl border border-dark-600 p-4 flex gap-2 items-center">
-          <input
-            type="text"
-            placeholder="Add tickers (e.g. AAPL, TSLA, AMZN)"
-            value={tickerInput}
-            onChange={(e) => setTickerInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddTicker()}
-            className="flex-1 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent-blue"
-          />
-          <button
-            onClick={handleAddTicker}
-            disabled={loading || !tickerInput.trim()}
-            className="px-4 py-2 bg-accent-blue rounded-lg text-white text-sm font-medium hover:bg-accent-blue/80 disabled:opacity-50 transition-colors"
-          >
-            Analyze
-          </button>
-        </div>
-      )}
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
