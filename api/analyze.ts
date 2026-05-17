@@ -34,10 +34,10 @@ export default async function handler(req: any, res: any) {
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: `Stock analyst doing WEEKLY analysis. Reply ONLY raw JSON, no markdown/fences. Schema:
 {"weekOf":"${fmt(weekStart)} to ${fmt(weekEnd)}","market":{"summary":"1-2 sentences","fedRate":"X%","inflation":"X%","oil":"$X"},"stocks":[{"ticker":"SYM","company":"Name","signal":"BUY|HOLD|SELL","confidence":"Low|Medium|High","keyReasons":["r1","r2"],"riskFactors":["r1","r2"],"newsSummary":"1 sentence","sector":"Sector"}],"previousWeek":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}],"currentWeek":[{"title":"headline","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence"}],"nextWeek":[{"title":"upcoming event/earnings/data","category":"AI|Market|Geopolitical|Sector|Economy","impact":"Bullish|Bearish|Neutral","summary":"1 sentence on what to watch"}]}
-Rules: under 15 words per reason/summary. 2-3 keyReasons, 2 riskFactors per stock. 3-5 items per news section. previousWeek=last week highlights. currentWeek=this week news. nextWeek=upcoming events/earnings/catalysts to watch.`,
+Rules: under 12 words per reason/summary. 2 keyReasons, 2 riskFactors per stock. 3 items per news section. Be extremely concise.`,
       messages: [{
         role: 'user',
         content: `Weekly analysis for: ${tickers.join(',')}`,
@@ -54,7 +54,18 @@ Rules: under 15 words per reason/summary. 2-3 keyReasons, 2 riskFactors per stoc
       text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '')
     }
 
-    const analysis = JSON.parse(text)
+    let analysis
+    try {
+      analysis = JSON.parse(text)
+    } catch (parseError: any) {
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      return res.status(500).json({
+        error: 'JSON parse failed',
+        message: parseError.message,
+        rawResponse: text,
+        stopReason: message.stop_reason,
+      })
+    }
 
     res.setHeader('Access-Control-Allow-Origin', '*')
     return res.status(200).json(analysis)

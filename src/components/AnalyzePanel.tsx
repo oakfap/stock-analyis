@@ -48,12 +48,23 @@ export default function AnalyzePanel() {
     if (all.length === 0) return
     dispatch(setTickers(all))
     setRawResponse('Fetching...')
-    const result = await dispatch(fetchAnalysis(all))
-    setRawResponse(
-      fetchAnalysis.fulfilled.match(result)
-        ? JSON.stringify(result.payload, null, 2)
-        : `Error: ${result.error.message}`
-    )
+    setShowRaw(true)
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tickers: all }),
+      })
+      const data = await res.json()
+      setRawResponse(JSON.stringify(data, null, 2))
+
+      if (res.ok && data.stocks) {
+        dispatch(fetchAnalysis(all))
+      }
+    } catch (err: any) {
+      setRawResponse(`Fetch error: ${err.message}`)
+    }
   }
 
   return (
